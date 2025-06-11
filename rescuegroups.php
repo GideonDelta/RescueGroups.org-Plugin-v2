@@ -50,10 +50,10 @@ function rg_rescue( $atts ) {
     }
     else{
       $search_json = '{
-        "token": "'.get_option(rg_token).'",
-        "tokenHash": "'.get_option(rg_tokenhash).'",
+        "token": "'.get_option('rg_token').'",
+        "tokenHash": "'.get_option('rg_tokenhash').'",
         "objectType": "animals",
-        "objectAction": "search",
+        "objectAction": "publicSearch",
         "search": {
           "resultStart": 0,
           "resultLimit": 100,
@@ -78,7 +78,7 @@ function rg_rescue( $atts ) {
 
     } else {
       $json_array = json_decode($search_json);
-      $result_array = rg_curl_api($json_array);
+      $result_array = rg_curl_api($json_array, 'https://api.rescuegroups.org/v5/public/animals/search');
 
       $output.= '<div class="row">';
       foreach($result_array['data'] as $k => $v){
@@ -197,8 +197,7 @@ function rg_settings_section_callback(  ) {
 }
 
 
-function rg_curl_api($array_data){
-        $url = "https://api.rescuegroups.org/http/";
+function rg_curl_api($array_data, $url){
         $data_string = json_encode($array_data);
 
         $ch = curl_init($url);
@@ -224,8 +223,12 @@ function rg_options_page(  ) {
 		$rg_username = $options['rg_username'];
 	        $rg_password = $options['rg_password'];
 
-		$get_token_array = array('accountNumber' => $rg_account, 'username' => $rg_username, 'password' => $rg_password, 'action' => 'login');
-		$result_array = rg_curl_api($get_token_array);
+                $get_token_array = array(
+                    'username' => $rg_username,
+                    'password' => $rg_password,
+                    'accountNumber' => $rg_account
+                );
+                $result_array = rg_curl_api($get_token_array, 'https://api.rescuegroups.org/v5/public/login');
 
                 if ($result_array['status'] == 'error'){
 			echo '<div class="notice notice-error"><p>'.$result_array['message'].'</p></div>';
